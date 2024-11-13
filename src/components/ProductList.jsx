@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { addToCart } from "../store/cartSlice";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "./ui/skeleton";
+import Image from "next/image";
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);

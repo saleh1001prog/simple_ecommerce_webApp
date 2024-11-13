@@ -5,6 +5,7 @@ import { FiShoppingCart } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { useState } from "react";
+import Image from "next/image";
 
 const Cart = () => {
   const dispatch = useDispatch();
