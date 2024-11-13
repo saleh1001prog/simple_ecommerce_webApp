@@ -1,9 +1,15 @@
 import dbConnect from '@/lib/mongodb';
 import Product from '@/models/Product';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export async function GET(req: NextRequest, context: { params: { id: string } }) {
-  const { id } = context.params;
+interface Context {
+  params: {
+    id: string;
+  };
+}
+
+export async function GET(_: Request, { params }: Context) {
+  const { id } = params;
 
   await dbConnect();
 
