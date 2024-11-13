@@ -2,9 +2,9 @@ import dbConnect from '@/lib/mongodb';
 import Product from '@/models/Product'; // Assuming the model is saved in src/models/Product
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  // Ensure that params.id is awaited
-  const { id } = params; // Not usually necessary, but keep this as a reminder
+export async function GET(req: NextRequest) {
+  // Extract the product ID from the URL
+  const id = req.nextUrl.pathname.split('/').pop();
 
   // Connect to the database
   await dbConnect();
