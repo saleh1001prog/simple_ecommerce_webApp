@@ -1,16 +1,13 @@
 import dbConnect from '@/lib/mongodb';
-import Product from '@/models/Product'; // Assuming the model is saved in src/models/Product
-import { NextResponse } from 'next/server';
+import Product from '@/models/Product';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET( { params }: { params: { id: string } }) {
-  // يتم استخراج `id` مباشرة من `params`
-  const { id } = params;
+export async function GET(req: NextRequest, context: { params: { id: string } }) {
+  const { id } = context.params;
 
-  // الاتصال بقاعدة البيانات
   await dbConnect();
 
   try {
-    // استخدام Mongoose للعثور على المنتج بواسطة ID
     const product = await Product.findById(id);
 
     if (!product) {
