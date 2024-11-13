@@ -3,14 +3,14 @@ import Product from '@/models/Product'; // Assuming the model is saved in src/mo
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  // Ensure that params.id is awaited
-  const { id } = await params; // Not usually necessary, but keep this as a reminder
+  // يتم استخراج `id` مباشرة من `params`
+  const { id } = params;
 
-  // Connect to the database
+  // الاتصال بقاعدة البيانات
   await dbConnect();
 
   try {
-    // Use Mongoose to find the product by ID
+    // استخدام Mongoose للعثور على المنتج بواسطة ID
     const product = await Product.findById(id);
 
     if (!product) {
