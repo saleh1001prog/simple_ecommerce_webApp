@@ -1,19 +1,16 @@
 import dbConnect from '@/lib/mongodb';
-import Product from '@/models/Product';
-import { NextResponse } from 'next/server';
+import Product from '@/models/Product'; // Assuming the model is saved in src/models/Product
+import { NextRequest, NextResponse } from 'next/server';
 
-interface Context {
-  params: {
-    id: string;
-  };
-}
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  // Ensure that params.id is awaited
+  const { id } = params; // Not usually necessary, but keep this as a reminder
 
-export async function GET(_: Request, { params }: Context) {
-  const { id } = params;
-
+  // Connect to the database
   await dbConnect();
 
   try {
+    // Use Mongoose to find the product by ID
     const product = await Product.findById(id);
 
     if (!product) {
@@ -26,3 +23,4 @@ export async function GET(_: Request, { params }: Context) {
     return NextResponse.json({ error: 'Error fetching product' }, { status: 500 });
   }
 }
+
