@@ -159,7 +159,7 @@ const ProductsStudio = () => {
               <div className="flex flex-wrap gap-2 mt-2">
                 {editingProduct.images.map((img) => (
                   <div key={img} className="relative">
-                    <img src={img} alt="Product" className="w-20 h-20 rounded object-cover" />
+                    <Image  src={img} alt="Product" width={12} height={12} className="w-20 h-20 rounded " />
                     <button onClick={() => handleRemoveImage(img)} className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full">
                       ×
                     </button>
@@ -227,5 +227,7 @@ const ProductCard = memo(({ product, onEdit, onDelete, onAddImagesClick }) => (
     </div>
   </div>
 ));
+ProductCard.displayName = "ProductCard";
+
 
 export default ProductsStudio;

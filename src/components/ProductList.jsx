@@ -1,14 +1,14 @@
 "use client";
-import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { addToCart } from '../store/cartSlice';
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { addToCart } from "../store/cartSlice";
 import { useRouter } from "next/navigation";
-import { Skeleton } from './ui/skeleton';
+import { Skeleton } from "./ui/skeleton";
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState(''); // State for search query
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const dispatch = useDispatch();
   const router = useRouter();
 
@@ -16,11 +16,13 @@ const ProductList = () => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`/api/products/FilterProduct?search=${searchQuery}`);
+        const response = await fetch(
+          `/api/products/FilterProduct?search=${searchQuery}`
+        );
         const data = await response.json();
         setProducts(data);
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error("Error fetching products:", error);
       } finally {
         setLoading(false);
       }
@@ -29,13 +31,15 @@ const ProductList = () => {
   }, [searchQuery]); // Re-run fetch when search query changes
 
   const handleAddToCart = (product) => {
-    dispatch(addToCart({
-      productId: product._id,
-      name: product.name,
-      price: product.price,
-      quantity: 1,
-      image: product.images[0],
-    }));
+    dispatch(
+      addToCart({
+        productId: product._id,
+        name: product.name,
+        price: product.price,
+        quantity: 1,
+        image: product.images[0],
+      })
+    );
   };
 
   return (
@@ -50,7 +54,10 @@ const ProductList = () => {
       <div className="flex flex-wrap gap-2 justify-center">
         {loading ? (
           Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="w-[300px] border rounded-lg p-4 shadow-md">
+            <div
+              key={index}
+              className="w-[300px] border rounded-lg p-4 shadow-md"
+            >
               <Skeleton className="w-full h-[200px] rounded-t-lg" />
               <div className="mt-4 flex flex-col gap-y-1">
                 <Skeleton className="h-6 w-3/4" />
@@ -64,11 +71,16 @@ const ProductList = () => {
           ))
         ) : products.length > 0 ? (
           products.map((product) => (
-            <div key={product._id} className="w-[300px] border rounded-lg p-4 shadow-md">
+            <div
+              key={product._id}
+              className="w-[300px] border rounded-lg p-4 shadow-md"
+            >
               <div className="w-full h-[200px]">
-                <img
+                <Image
                   src={product.images[0]}
                   alt={product.name}
+                  width={500} // العرض المناسب للصورة
+                  height={500} // الارتفاع المناسب للصورة
                   className="w-full h-full object-contain rounded-t-lg"
                 />
               </div>
@@ -77,7 +89,9 @@ const ProductList = () => {
                 <p className="text-gray-600">${product.price}</p>
                 <div className="flex justify-between items-center">
                   <button
-                    onClick={() => router.push(`/productDetails/${product._id}`)}
+                    onClick={() =>
+                      router.push(`/productDetails/${product._id}`)
+                    }
                     className="flex items-center bg-gray-500 text-white px-3 py-2 rounded hover:bg-gray-600"
                     aria-label={`View details of ${product.name}`}
                   >

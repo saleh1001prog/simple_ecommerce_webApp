@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 }
 
 // GET method to fetch all products
-export async function GET(req: NextRequest) {
+export async function GET() {
   await connectDB();
 
   try {
@@ -47,6 +47,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: 'Error fetching products', error: error.message }, { status: 500 });
   }
 }
+
+
 
 // PUT method to update a product by ID
 export async function PUT(req: NextRequest) {
@@ -72,7 +74,7 @@ export async function PUT(req: NextRequest) {
 
     // Find images that need to be deleted from Cloudinary
     const imagesToDelete = existingProduct.images.filter(
-      (imageUrl) => !existingImages.includes(imageUrl)
+      (imageUrl: string) => !existingImages.includes(imageUrl)
     );
 
     // Delete unused images from Cloudinary

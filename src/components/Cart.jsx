@@ -63,11 +63,13 @@ const Cart = () => {
                 <tr key={item.productId}>
                   <td className="px-2 md:px-4 py-2 border-b">
                     <div className="flex flex-col items-center">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-12 h-12 object-contain rounded"
-                      />
+                    <Image
+  src={item.image}
+  alt={item.name}
+  width={48} // تأكد من ضبط العرض والارتفاع بما يناسب التصميم (هنا 48 بكسل للعرض والارتفاع لتناسب w-12 h-12)
+  height={48}
+  className="w-12 h-12 object-contain rounded"
+/>
                       <span className="mt-2 text-center">{item.name}</span>
                     </div>
                   </td>

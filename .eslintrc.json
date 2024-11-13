@@ -1,3 +1,17 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript"]
+  "extends": [
+    "next/core-web-vitals", 
+    "next/typescript",
+    "eslint:recommended",        // إضافات لمراجعة الأخطاء العامة
+    "plugin:@typescript-eslint/recommended" // قواعد TypeScript
+  ],
+  "plugins": ["@typescript-eslint"],
+  "parserOptions": {
+    "project": "./tsconfig.json"  // يشير إلى ملف tsconfig لتحديد الإعدادات
+  },
+  "rules": {
+    // يمكنك إضافة أو تعديل القواعد الخاصة بك هنا حسب الحاجة
+    "no-unused-vars": "warn",  // مثال: لتحذير حول المتغيرات غير المستخدمة
+    "react/react-in-jsx-scope": "off" // إذا كنت تستخدم React 17 أو أحدث
+  }
 }

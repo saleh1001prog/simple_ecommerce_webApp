@@ -81,7 +81,9 @@ export async function GET(req: NextRequest) {
   const search = req.nextUrl.searchParams.get('search') || '';
   const showUnconfirmedOnly = req.nextUrl.searchParams.get('showUnconfirmedOnly') === 'true';
 
-  const filter: any = {};
+  // تعريف نوع `filter` كـ Record<string, unknown> بدلًا من any
+  const filter: Record<string, unknown> = {};
+  
   if (search) {
     const regex = new RegExp(search, 'i');
     filter.$or = [{ name: regex }, { phone: regex }];

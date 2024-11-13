@@ -1,6 +1,7 @@
 "use client";
 import { useState } from 'react';
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
+import Image from 'next/image';
 
 const ProductForm = () => {
   const [name, setName] = useState('');
@@ -95,11 +96,14 @@ const ProductForm = () => {
         <div className="flex flex-wrap gap-4 mt-4">
           {images.map((image, index) => (
             <div key={index} className="relative w-20 h-20">
-              <img
-                src={URL.createObjectURL(image)}
-                alt={`preview ${index}`}
-                className="w-full h-full object-cover rounded-lg shadow-sm border border-gray-200"
-              />
+            <Image
+  src={URL.createObjectURL(image)}
+  alt={`preview ${index}`}
+  width={200} // حدد العرض المناسب
+  height={200} // حدد الارتفاع المناسب
+  unoptimized
+  className="w-full h-full object-cover rounded-lg shadow-sm border border-gray-200"
+/>
             </div>
           ))}
         </div>
