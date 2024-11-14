@@ -44,7 +44,10 @@ export async function GET() {
     const products = await Product.find();
     return NextResponse.json(products);
   } catch (error) {
-    return NextResponse.json({ message: 'Error fetching products', error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { message: 'Error fetching products', error: (error as Error).message },
+      { status: 500 }
+    );
   }
 }
 
