@@ -10,9 +10,9 @@ const Checkout = () => {
   const [phone, setPhone] = useState('');
   const [state, setState] = useState('');
   const [showDialog, setShowDialog] = useState(false);
-
+  //@ts-ignore
   const cartItems = useSelector((state) => state.cart.items);
-  const totalAmount = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+  const totalAmount = cartItems.reduce((total: number, item: { price: number; quantity: number; }) => total + item.price * item.quantity, 0);
 
   const dispatch = useDispatch();
   const router = useRouter();
