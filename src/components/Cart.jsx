@@ -10,6 +10,7 @@ import Image from "next/image";
 const Cart = () => {
   const dispatch = useDispatch();
   const router = useRouter();
+  // @ts-ignore
   const cartItems = useSelector((state) => state.cart.items);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
