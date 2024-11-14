@@ -65,7 +65,7 @@ const Cart = () => {
                   <td className="px-2 md:px-4 py-2 border-b">
                     <div className="flex flex-col items-center">
                     <Image
-  src={item.image}
+  src={item.imageUrl}
   alt={item.name}
   width={48} // تأكد من ضبط العرض والارتفاع بما يناسب التصميم (هنا 48 بكسل للعرض والارتفاع لتناسب w-12 h-12)
   height={48}

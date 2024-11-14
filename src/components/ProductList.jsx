@@ -38,7 +38,7 @@ const ProductList = () => {
         name: product.name,
         price: product.price,
         quantity: 1,
-        image: product.images[0],
+        imageUrl: product.images[0],
       })
     );
   };
