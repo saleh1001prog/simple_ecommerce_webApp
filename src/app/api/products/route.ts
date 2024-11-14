@@ -111,7 +111,7 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json({ message: 'Product updated successfully', product: updatedProduct });
   } catch (error) {
-    return NextResponse.json({ message: 'Error updating product', error: error.message }, { status: 500 });
+    return NextResponse.json({ message: 'Error updating product', error: (error as Error).message }, { status: 500 });
   }
 }
 
@@ -144,6 +144,6 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({ message: 'Product and associated images deleted successfully' });
   } catch (error) {
-    return NextResponse.json({ message: 'Error deleting product', error: error.message }, { status: 500 });
+    return NextResponse.json({ message: 'Error deleting product',error: (error as Error).message }, { status: 500 });
   }
 }
