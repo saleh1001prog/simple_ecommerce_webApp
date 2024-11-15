@@ -4,8 +4,43 @@ import { removeFromCart, updateQuantity } from "../store/cartSlice";
 import { FiShoppingCart } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/dialog";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import Image from "next/image";
+import React from "react";
+
+// مكون الصف الخاص بالعربة
+const CartItemRow = React.memo(({ item, onQuantityChange, onRemove }) => (
+  <tr>
+    <td className="px-2 md:px-4 py-2 border-b">
+      <div className="flex flex-col items-center">
+        <Image
+          src={item.imageUrl}
+          alt={item.name}
+          width={48}
+          height={48}
+          className="w-12 h-12 object-contain rounded"
+        />
+        <span className="mt-2 text-center">{item.name}</span>
+      </div>
+    </td>
+    <td className="px-2 md:px-4 py-2 border-b">
+      <input
+        type="number"
+        value={item.quantity}
+        min="1"
+        onChange={(e) => onQuantityChange(item.productId, Number(e.target.value))}
+        className="w-16 p-1 border rounded text-center"
+      />
+    </td>
+    <td className="px-2 md:px-4 py-2 border-b">{item.price}</td>
+    <td className="px-2 md:px-4 py-2 border-b">{item.price * item.quantity}</td>
+    <td className="px-2 md:px-4 py-2 border-b">
+      <button onClick={() => onRemove(item.productId)} className="text-red-500">
+        حذف
+      </button>
+    </td>
+  </tr>
+));
 
 const Cart = () => {
   const dispatch = useDispatch();
@@ -13,22 +48,33 @@ const Cart = () => {
   const cartItems = useSelector((state) => state.cart.items);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleRemoveFromCart = (productId) => {
-    dispatch(removeFromCart(productId));
-  };
+  // دالة إزالة المنتج
+  const handleRemoveFromCart = useCallback(
+    (productId) => {
+      dispatch(removeFromCart(productId));
+    },
+    [dispatch]
+  );
 
-  const handleQuantityChange = (productId, newQuantity) => {
-    dispatch(updateQuantity({ productId, quantity: newQuantity }));
-  };
+  // دالة تغيير الكمية
+  const handleQuantityChange = useCallback(
+    (productId, newQuantity) => {
+      dispatch(updateQuantity({ productId, quantity: newQuantity }));
+    },
+    [dispatch]
+  );
 
-  const handleCheckout = () => {
+  // دالة الانتقال لصفحة الدفع
+  const handleCheckout = useCallback(() => {
     setIsDialogOpen(false);
     router.push("/checkout");
-  };
+  }, [router]);
 
-  const totalAmount = cartItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0
+  // حساب المبلغ الإجمالي باستخدام useMemo
+  const totalAmount = useMemo(
+    () =>
+      cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0),
+    [cartItems]
   );
 
   return (
@@ -61,43 +107,12 @@ const Cart = () => {
             </thead>
             <tbody>
               {cartItems.map((item) => (
-                <tr key={item.productId}>
-                  <td className="px-2 md:px-4 py-2 border-b">
-                    <div className="flex flex-col items-center">
-                    <Image
-  src={item.imageUrl}
-  alt={item.name}
-  width={48} // تأكد من ضبط العرض والارتفاع بما يناسب التصميم (هنا 48 بكسل للعرض والارتفاع لتناسب w-12 h-12)
-  height={48}
-  className="w-12 h-12 object-contain rounded"
-/>
-                      <span className="mt-2 text-center">{item.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-2 md:px-4 py-2 border-b">
-                    <input
-                      type="number"
-                      value={item.quantity}
-                      min="1"
-                      onChange={(e) =>
-                        handleQuantityChange(item.productId, Number(e.target.value))
-                      }
-                      className="w-16 p-1 border rounded text-center"
-                    />
-                  </td>
-                  <td className="px-2 md:px-4 py-2 border-b">{item.price}</td>
-                  <td className="px-2 md:px-4 py-2 border-b">
-                    {item.price * item.quantity}
-                  </td>
-                  <td className="px-2 md:px-4 py-2 border-b">
-                    <button
-                      onClick={() => handleRemoveFromCart(item.productId)}
-                      className="text-red-500"
-                    >
-                      حذف
-                    </button>
-                  </td>
-                </tr>
+                <CartItemRow
+                  key={item.productId}
+                  item={item}
+                  onQuantityChange={handleQuantityChange}
+                  onRemove={handleRemoveFromCart}
+                />
               ))}
             </tbody>
           </table>

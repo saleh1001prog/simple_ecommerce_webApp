@@ -1,6 +1,10 @@
-// OrderForm.tsx
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Product {
   _id: string;
@@ -11,30 +15,41 @@ interface Product {
 }
 
 interface OrderFormProps {
-  product: Product;
+  product: Product | null; // تحديد `null` كقيمة افتراضية لتجنب الأخطاء.
   onClose: () => void;
   onOrderSuccess: () => void;
 }
 
-const OrderForm: React.FC<OrderFormProps> = ({ product, onClose, onOrderSuccess }) => {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [state, setState] = useState('');
+const OrderForm: React.FC<OrderFormProps> = ({
+  product,
+  onClose,
+  onOrderSuccess,
+}) => {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [state, setState] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // تحقق إذا لم يتم تمرير منتج، لا تعرض المكون.
+  if (!product) {
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // التحقق من صحة الحقول
     if (phone.length < 10) {
-      alert('Phone number must be at least 10 digits long.');
+      alert("Phone number must be at least 10 digits long.");
       return;
     }
 
     setIsLoading(true);
     try {
-      const response = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           productId: product._id,
           firstName,
@@ -45,11 +60,15 @@ const OrderForm: React.FC<OrderFormProps> = ({ product, onClose, onOrderSuccess 
       });
 
       if (response.ok) {
-        alert('Order submitted successfully!');
+        alert("Order submitted successfully!");
         onOrderSuccess();
+        onClose(); // أغلق النافذة عند النجاح.
       } else {
-        alert('There was an error submitting the order.');
+        const errorData = await response.json();
+        alert(`Error: ${errorData.message || "There was an error."}`);
       }
+    } catch (error) {
+      alert("An unexpected error occurred.");
     } finally {
       setIsLoading(false);
     }
@@ -57,13 +76,17 @@ const OrderForm: React.FC<OrderFormProps> = ({ product, onClose, onOrderSuccess 
 
   return (
     <Dialog open={!!product} onOpenChange={onClose}>
-      <DialogContent  className="max-w-lg mx-auto p-6 bg-white rounded-lg shadow-lg">
+      <DialogContent className="max-w-lg mx-auto p-6 bg-white rounded-lg shadow-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-center mb-4 text-blue-700">Product Order</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-center mb-4 text-blue-700">
+            Order: {product.name}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">First Name:</label>
+            <label className="block text-sm font-medium text-gray-700">
+              First Name:
+            </label>
             <input
               type="text"
               value={firstName}
@@ -73,7 +96,9 @@ const OrderForm: React.FC<OrderFormProps> = ({ product, onClose, onOrderSuccess 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Last Name:</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Last Name:
+            </label>
             <input
               type="text"
               value={lastName}
@@ -83,7 +108,9 @@ const OrderForm: React.FC<OrderFormProps> = ({ product, onClose, onOrderSuccess 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Phone Number:</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Phone Number:
+            </label>
             <input
               type="tel"
               value={phone}
@@ -94,7 +121,9 @@ const OrderForm: React.FC<OrderFormProps> = ({ product, onClose, onOrderSuccess 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">wilaya:</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Wilaya:
+            </label>
             <input
               type="text"
               value={state}
@@ -113,10 +142,10 @@ const OrderForm: React.FC<OrderFormProps> = ({ product, onClose, onOrderSuccess 
             </button>
             <button
               type="submit"
+              disabled={isLoading}
               className={`flex items-center justify-center bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition ${
                 isLoading ? "cursor-not-allowed opacity-50" : ""
               }`}
-              disabled={isLoading}
             >
               {isLoading ? (
                 <svg
