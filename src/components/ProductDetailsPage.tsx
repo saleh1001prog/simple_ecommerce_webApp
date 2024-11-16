@@ -98,13 +98,13 @@ const ProductDetailsPage = () => {
               </div>
             ))}
           </div>
-          <div className="bg-gray-200 rounded-lg overflow-hidden flex justify-center items-center">
+          <div className="bg-gray-200 h-[500px] rounded-lg overflow-hidden flex justify-center items-center">
             <Image
               src={product.images[currentImageIndex]}
               alt={`Image of ${product.name}`}
-              width={800}
-              height={600}
-              className="object-contain"
+              width={500}
+              height={500}
+              className="object-contain h-full "
               priority
             />
           </div>
@@ -117,7 +117,7 @@ const ProductDetailsPage = () => {
           <p className="text-lg font-semibold text-blue-700">${product.price.toFixed(2)}</p>
           <button
             onClick={handleAddToCart}
-            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
+            className="bg-blue-500 max-w-52 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
           >
             طلب المنتج
           </button>

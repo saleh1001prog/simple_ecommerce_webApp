@@ -5,6 +5,24 @@ import Product from '@/models/Product';
 import cloudinary from '@/lib/cloudinary';
 import connectDB from '@/lib/mongodb';
 
+
+
+export async function GET() {
+  await connectDB();
+
+  try {
+    const products = await Product.find();
+    return NextResponse.json(products);
+  } catch (error) {
+    return NextResponse.json(
+      { message: 'Error fetching products', error: (error as Error).message },
+      { status: 500 }
+    );
+  }
+}
+
+
+
 // POST method to create a new product
 export async function POST(req: NextRequest) {
   await connectDB();
@@ -37,20 +55,6 @@ export async function POST(req: NextRequest) {
 }
 
 // GET method to fetch all products
-export async function GET() {
-  await connectDB();
-
-  try {
-    const products = await Product.find();
-    return NextResponse.json(products);
-  } catch (error) {
-    return NextResponse.json(
-      { message: 'Error fetching products', error: (error as Error).message },
-      { status: 500 }
-    );
-  }
-}
-
 
 
 // PUT method to update a product by ID

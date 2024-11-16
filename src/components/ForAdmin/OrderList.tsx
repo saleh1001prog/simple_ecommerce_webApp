@@ -7,6 +7,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "../ui/dialog";
+import { Button } from "../ui/button";
 
 interface Product {
   _id: string;
@@ -173,12 +174,12 @@ const OrderList = () => {
   return (
     <div className="p-1 bg-gray-50 rounded-lg shadow-lg min-h-[350px] overflow-auto">
       <div className="flex justify-between items-center mb-6">
-        <button
+        <Button
           onClick={handlePrintOrders}
-          className="bg-green-500 text-sm text-white px-4 py-2 rounded-md shadow hover:bg-green-600 transition duration-150 ease-in-out"
+          className="bg-green-500 text-sm text-white  "
         >
            print orders
-        </button>
+        </Button>
         <input
           type="text"
           placeholder="Search by name or phone..."
@@ -226,25 +227,25 @@ const OrderList = () => {
                   {order.confirmed ? "Confirmed" : "Unconfirmed"}
                 </td>
                 <td className="py-2 px-4 border-b flex gap-2 justify-center">
-                  <button
+                  <Button
                     onClick={() => openDetailsDialog(order)}
-                    className="bg-gray-500 text-white px-3 py-1 rounded"
+                    className="bg-gray-500 text-white"
                   >
                     details
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => openDeleteDialog(order._id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded"
+                    className="bg-red-500 text-white"
                   >
                     Delete
-                  </button>
+                  </Button>
                   {!order.confirmed && (
-                    <button
+                    <Button
                       onClick={() => handleConfirm(order._id)}
-                      className="bg-blue-500 text-white px-3 py-1 rounded"
+                      className="bg-blue-500 text-white "
                     >
                       Confirm
-                    </button>
+                    </Button>
                   )}
                 </td>
               </tr>
@@ -261,18 +262,18 @@ const OrderList = () => {
           <p>Are you sure you want to delete this order?</p>
           <DialogFooter className="flex justify-end mt-4">
             <div className="flex w-full justify-between">
-              <button
+              <Button
                 onClick={closeDeleteDialog}
-                className="bg-gray-200 text-gray-700 px-4 py-2 rounded"
+                className="bg-gray-200 text-gray-700"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleDelete}
-                className="bg-red-500 text-white px-4 py-2 rounded"
+                className="bg-red-500 "
               >
                 Delete
-              </button>
+              </Button>
             </div>
           </DialogFooter>
         </DialogContent>
@@ -286,12 +287,12 @@ const OrderList = () => {
             </DialogHeader>
             <OrderDetails order={selectedOrder} />
             <DialogFooter className="flex justify-end mt-4">
-              <button
+              <Button
                 onClick={closeDetailsDialog}
-                className="bg-gray-200 text-gray-700 px-4 py-2 rounded"
+                className="bg-gray-200 text-gray-700 "
               >
                 close
-              </button>
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

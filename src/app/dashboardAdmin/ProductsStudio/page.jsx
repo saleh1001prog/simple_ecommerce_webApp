@@ -1,14 +1,18 @@
 "use client";
 import { useEffect, useState, memo } from "react";
 import axios from "axios";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
 const ProductsStudio = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [deletingProduct, setDeletingProduct] = useState(null);
   const [newImages, setNewImages] = useState([]);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -35,10 +39,6 @@ const ProductsStudio = () => {
     if (e.target.files) {
       setNewImages(Array.from(e.target.files));
     }
-  };
-
-  const handleAddImagesClick = (product) => {
-    setEditingProduct(product);
   };
 
   const handleRemoveImage = (image) => {
@@ -87,25 +87,30 @@ const ProductsStudio = () => {
     }
   };
 
-  const handleDelete = async (productId) => {
+  const handleDelete = async () => {
+    if (!deletingProduct) return;
+    setIsDeleting(true);
     try {
       const response = await fetch(`/api/products`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ _id: productId }),
+        body: JSON.stringify({ _id: deletingProduct._id }),
       });
 
       if (response.ok) {
         alert("Product deleted successfully");
-        setProducts(products.filter((product) => product._id !== productId));
+        setProducts(products.filter((product) => product._id !== deletingProduct._id));
+        setDeletingProduct(null);
       } else {
         const errorData = await response.json();
         alert(errorData.message || "Error deleting product");
       }
     } catch (error) {
       console.error("Error deleting product:", error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -118,49 +123,70 @@ const ProductsStudio = () => {
           key={product._id}
           product={product}
           onEdit={handleEdit}
-          onDelete={handleDelete}
-          onAddImagesClick={handleAddImagesClick}
+          onDelete={() => setDeletingProduct(product)}
         />
       ))}
 
-      {editingProduct && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50">
-          <form onSubmit={handleUpdate} className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md space-y-4">
-            <h3 className="text-lg font-bold text-gray-900">Edit Product</h3>
+      <Dialog open={!!editingProduct} onOpenChange={() => setEditingProduct(null)}>
+        <DialogContent>
+          <form onSubmit={handleUpdate} className="space-y-4">
+            <DialogHeader>
+              <DialogTitle>Edit Product</DialogTitle>
+            </DialogHeader>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Name:</label>
+              <label className="block text-sm font-medium">Name:</label>
               <input
                 type="text"
-                value={editingProduct.name}
-                onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
-                className="mt-1 block w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+                value={editingProduct?.name || ""}
+                onChange={(e) =>
+                  setEditingProduct({ ...editingProduct, name: e.target.value })
+                }
+                className="w-full px-4 py-2 border rounded"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Description:</label>
+              <label className="block text-sm font-medium">Description:</label>
               <textarea
-                type="text"
-                value={editingProduct.description}
-                onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
-                className="mt-1 block w-full min-h-28 h-fit px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+                value={editingProduct?.description || ""}
+                onChange={(e) =>
+                  setEditingProduct({
+                    ...editingProduct,
+                    description: e.target.value,
+                  })
+                }
+                className="w-full px-4 py-2 border rounded"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Price:</label>
+              <label className="block text-sm font-medium">Price:</label>
               <input
                 type="number"
-                value={editingProduct.price}
-                onChange={(e) => setEditingProduct({ ...editingProduct, price: parseFloat(e.target.value) })}
-                className="mt-1 block w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300"
+                value={editingProduct?.price || ""}
+                onChange={(e) =>
+                  setEditingProduct({
+                    ...editingProduct,
+                    price: parseFloat(e.target.value),
+                  })
+                }
+                className="w-full px-4 py-2 border rounded"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Current Images:</label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {editingProduct.images.map((img) => (
+              <label className="block text-sm font-medium">Current Images:</label>
+              <div className="flex gap-2">
+                {editingProduct?.images.map((img) => (
                   <div key={img} className="relative">
-                    <Image  src={img} alt="Product" width={12} height={12} className="w-20 h-20 rounded " />
-                    <button onClick={() => handleRemoveImage(img)} className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full">
+                    <Image
+                      src={img}
+                      alt="Product"
+                      width={80}
+                      height={80}
+                      className="rounded object-cover"
+                    />
+                    <button
+                      onClick={() => handleRemoveImage(img)}
+                      className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full"
+                    >
                       ×
                     </button>
                   </div>
@@ -168,66 +194,76 @@ const ProductsStudio = () => {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Add New Images:</label>
-              <input type="file" multiple onChange={handleImageChange} className="mt-1 block w-full text-gray-900" />
-              <div className="mt-2 flex gap-2 flex-wrap">
+              <label className="block text-sm font-medium">Add New Images:</label>
+              <input
+                type="file"
+                multiple
+                onChange={handleImageChange}
+                className="block w-full"
+              />
+              <div className="mt-2 flex gap-2">
                 {newImages.map((file, index) => (
-                  <div key={index} className="relative">
-                    <Image src={URL.createObjectURL(file)} alt="Preview" width={20} height={20} className="w-20 h-20 rounded object-cover" />
-                  </div>
+                  <Image
+                    key={index}
+                    src={URL.createObjectURL(file)}
+                    alt="Preview"
+                    width={80}
+                    height={80}
+                    className="rounded object-cover"
+                  />
                 ))}
               </div>
             </div>
-            <div className="flex justify-end space-x-2">
-              <button type="button" onClick={() => setEditingProduct(null)} className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400">
+            <DialogFooter>
+              <Button variant="secondary" onClick={() => setEditingProduct(null)}>
                 Cancel
-              </button>
-              <button type="submit" disabled={isUpdating} className={`px-4 py-2 rounded-md ${isUpdating ? "bg-gray-500" : "bg-blue-500 hover:bg-blue-600"} text-white`}>
+              </Button>
+              <Button type="submit" disabled={isUpdating}>
                 {isUpdating ? "Updating..." : "Update"}
-              </button>
-            </div>
+              </Button>
+            </DialogFooter>
           </form>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!deletingProduct} onOpenChange={() => setDeletingProduct(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+          </DialogHeader>
+          <p>Are you sure you want to delete this product?</p>
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setDeletingProduct(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+              {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
-const ProductCard = memo(({ product, onEdit, onDelete, onAddImagesClick }) => (
-  <div className="bg-white border w-[250px] border-gray-200 rounded-lg shadow-md overflow-hidden">
+const ProductCard = memo(({ product, onEdit, onDelete }) => (
+  <div className="bg-white border rounded-lg shadow-md w-[250px]">
     {product.images.length > 0 ? (
-      <div className="flex justify-center w-full h-[100px]">
-        <img src={product.images[0]} alt={product.name} className="w-full h-full object-contain transition-transform hover:scale-105" />
-      </div>
+      <img src={product.images[0]} alt={product.name} className="w-full h-[150px] object-cover" />
     ) : (
-      <div
-        className="w-full h-48 flex items-center justify-center bg-gray-100 cursor-pointer"
-        onClick={() => onAddImagesClick(product)}
-      >
-        <span className="text-4xl text-gray-400">+</span>
-      </div>
+      <div className="w-full h-[150px] flex items-center justify-center bg-gray-200">No Image</div>
     )}
-    <div className="p-4 flex flex-col justify-between gap-2">
-      <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
-      <p className="text-xl font-bold text-blue-600">${product.price.toFixed(2)}</p>
-      <div className="flex justify-between gap-2">
-        <button
-          onClick={() => onEdit(product)}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-        >
-          Edit
-        </button>
-        <button
-          onClick={() => onDelete(product._id)}
-          className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
-        >
+    <div className="p-4">
+      <h3 className="text-lg font-semibold">{product.name}</h3>
+      <p className="text-blue-600">${product.price.toFixed(2)}</p>
+      <div className="flex gap-2 mt-4">
+        <Button onClick={() => onEdit(product)}>Edit</Button>
+        <Button variant="destructive" onClick={() => onDelete(product)}>
           Delete
-        </button>
+        </Button>
       </div>
     </div>
   </div>
 ));
-ProductCard.displayName = "ProductCard";
-
 
 export default ProductsStudio;
