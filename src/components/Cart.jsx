@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { useState, useMemo, useCallback } from "react";
 import Image from "next/image";
 import React from "react";
+import { Button } from "./ui/button";
 
 // مكون الصف الخاص بالعربة
 const CartItemRow = React.memo(({ item, onQuantityChange, onRemove }) => (
@@ -81,7 +82,7 @@ const Cart = () => {
     <div className="fixed left-4 top-1/2 transform -translate-y-1/2">
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
-          <button
+          <Button
             className="relative text-gray-700 p-2 rounded-full bg-gray-200 hover:bg-gray-300"
             onClick={() => setIsDialogOpen(true)}
           >
@@ -91,7 +92,7 @@ const Cart = () => {
                 {cartItems.length}
               </span>
             )}
-          </button>
+          </Button>
         </DialogTrigger>
         <DialogContent className="min-w-fit">
           <DialogTitle className="text-xl font-bold mb-4">Shopping Cart</DialogTitle>
@@ -119,15 +120,16 @@ const Cart = () => {
           <div className="text-right mt-4 font-semibold">
             Total Amount: {totalAmount} DA
           </div>
-          <button
+          <Button
             onClick={handleCheckout}
             disabled={cartItems.length === 0}
+            variant="secondary"
             className={`${
-              cartItems.length === 0 ? "bg-gray-300" : "bg-green-500 hover:bg-green-600"
+              cartItems.length === 0 ? "bg-gray-600" : "bg-green-500 hover:bg-green-600"
             } text-white px-4 py-2 rounded mt-4 w-full`}
           >
             املئ معلوماتك
-          </button>
+          </Button>
         </DialogContent>
       </Dialog>
     </div>

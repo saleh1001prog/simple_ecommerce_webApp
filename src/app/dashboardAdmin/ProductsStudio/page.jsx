@@ -145,8 +145,9 @@ const ProductsStudio = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium">Description:</label>
+              <label  className="block text-sm font-medium ">Description:</label>
               <textarea
+              dir="rtl"
                 value={editingProduct?.description || ""}
                 onChange={(e) =>
                   setEditingProduct({

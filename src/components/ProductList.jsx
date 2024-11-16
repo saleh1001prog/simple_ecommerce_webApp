@@ -5,6 +5,7 @@ import { addToCart } from "../store/cartSlice";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "./ui/skeleton";
 import Image from "next/image";
+import { Button } from "./ui/button";
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
@@ -89,7 +90,7 @@ const ProductList = () => {
                 <h3 className="text-lg font-semibold">{product.name}</h3>
                 <p className="text-gray-600">${product.price}</p>
                 <div className="flex justify-between items-center">
-                  <button
+                  <Button
                     onClick={() =>
                       router.push(`/productDetails/${product._id}`)
                     }
@@ -97,14 +98,14 @@ const ProductList = () => {
                     aria-label={`View details of ${product.name}`}
                   >
                     التفاصيل
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     onClick={() => handleAddToCart(product)}
                     className="flex items-center bg-blue-500 gap-x-2 text-white px-3 py-2 rounded hover:bg-blue-600"
                     aria-label={`Add ${product.name} to cart`}
                   >
                     طلب المنتج
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

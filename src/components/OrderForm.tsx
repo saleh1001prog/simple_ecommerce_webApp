@@ -59,7 +59,6 @@ const OrderForm: React.FC<OrderFormProps> = ({
       });
 
       if (response.ok) {
-        alert("Order submitted successfully!");
         onOrderSuccess();
         onClose();
       } else {

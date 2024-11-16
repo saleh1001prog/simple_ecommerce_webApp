@@ -1,21 +1,24 @@
 "use client";
-import { useState } from 'react';
-import axios from 'axios';
-import Image from 'next/image';
+import { useState } from "react";
+import axios from "axios";
+import Image from "next/image";
+import { Button } from "../ui/button";
 
 const ProductForm = () => {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
   const [images, setImages] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedImages = Array.from(e.target.files);
-      const validImages = selectedImages.filter(file => file.size <= 5 * 1024 * 1024); // 5MB limit
+      const validImages = selectedImages.filter(
+        (file) => file.size <= 5 * 1024 * 1024
+      ); // 5MB limit
       if (validImages.length !== selectedImages.length) {
-        alert('Some images are too large (max 5MB).');
+        alert("Some images are too large (max 5MB).");
       }
       setImages(validImages);
     }
@@ -24,26 +27,26 @@ const ProductForm = () => {
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setIsSubmitting(true);
-  
+
     const formData = new FormData();
-    formData.append('name', name);
-    formData.append('description', description);
-    formData.append('price', price);
-    images.forEach((file: File) => formData.append('images', file));
-  
+    formData.append("name", name);
+    formData.append("description", description);
+    formData.append("price", price);
+    images.forEach((file: File) => formData.append("images", file));
+
     try {
-      const response = await axios.post('/api/products', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      const response = await axios.post("/api/products", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
       if (response.status === 200) {
-        alert('Product created successfully!');
-        setName('');
-        setDescription('');
-        setPrice('');
+        alert("Product created successfully!");
+        setName("");
+        setDescription("");
+        setPrice("");
         setImages([]);
       }
     } catch (error: unknown) {
-      let errorMessage = 'An unknown error occurred';
+      let errorMessage = "An unknown error occurred";
       if (axios.isAxiosError(error)) {
         errorMessage = error.response?.data?.message || error.message;
       } else if (error instanceof Error) {
@@ -55,20 +58,25 @@ const ProductForm = () => {
     }
   };
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-8 shadow-lg rounded-lg max-w-md mx-auto space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800 text-center">Add Product</h2>
+    <form
+      onSubmit={handleSubmit}
+      className="bg-white p-8 shadow-lg rounded-lg max-w-md mx-auto space-y-6"
+    >
+      <h2 className="text-2xl font-bold text-gray-800 text-center">
+        Add Product
+      </h2>
       <input
         type="text"
         placeholder="Product Name"
         value={name}
-        onChange={e => setName(e.target.value)}
+        onChange={(e) => setName(e.target.value)}
         required
         className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       <textarea
         placeholder="Description"
         value={description}
-        onChange={e => setDescription(e.target.value)}
+        onChange={(e) => setDescription(e.target.value)}
         required
         className="w-full p-3 border h-[250px] border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
         rows={4}
@@ -77,7 +85,7 @@ const ProductForm = () => {
         type="number"
         placeholder="Price"
         value={price}
-        onChange={e => setPrice(e.target.value)}
+        onChange={(e) => setPrice(e.target.value)}
         required
         className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
@@ -96,27 +104,29 @@ const ProductForm = () => {
         <div className="flex flex-wrap gap-4 mt-4">
           {images.map((image, index) => (
             <div key={index} className="relative w-20 h-20">
-            <Image
-  src={URL.createObjectURL(image)}
-  alt={`preview ${index}`}
-  width={200} // حدد العرض المناسب
-  height={200} // حدد الارتفاع المناسب
-  unoptimized
-  className="w-full h-full object-cover rounded-lg shadow-sm border border-gray-200"
-/>
+              <Image
+                src={URL.createObjectURL(image)}
+                alt={`preview ${index}`}
+                width={200} // حدد العرض المناسب
+                height={200} // حدد الارتفاع المناسب
+                unoptimized
+                className="w-full h-full object-cover rounded-lg shadow-sm border border-gray-200"
+              />
             </div>
           ))}
         </div>
       )}
-      <button
+      <Button
         type="submit"
         disabled={isSubmitting}
         className={`w-full text-white font-semibold py-2 rounded-md transition duration-150 ease-in-out ${
-          isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+          isSubmitting
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-blue-500 hover:bg-blue-600"
         }`}
       >
-        {isSubmitting ? 'Submitting...' : 'Add Product'}
-      </button>
+        {isSubmitting ? "Submitting..." : "Add Product"}
+      </Button>
     </form>
   );
 };

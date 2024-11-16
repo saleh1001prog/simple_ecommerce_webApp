@@ -9,6 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { FiUser } from 'react-icons/fi';
+import { Button } from "./ui/button";
 
 function DialogLogin({ onAdminLogin }: { onAdminLogin: (loggedIn: boolean) => void }) {
   const [username, setUsername] = useState("");
@@ -102,12 +103,12 @@ function DialogLogin({ onAdminLogin }: { onAdminLogin: (loggedIn: boolean) => vo
                 required
               />
             </div>
-            <button
+            <Button
               type="submit"
-              className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+              className="w-full"
             >
               Login
-            </button>
+            </Button>
           </form>
         )}
       </DialogContent>

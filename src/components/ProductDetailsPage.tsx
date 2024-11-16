@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { addToCart } from "../store/cartSlice";
 import { useParams } from "next/navigation";
 import Image from "next/image";
+import { Button } from "./ui/button";
 
 interface Product {
   _id: string;
@@ -73,7 +74,7 @@ const ProductDetailsPage = () => {
   if (!product) {
     return <div className="text-center p-10">لم يتم العثور على المنتج.</div>;
   }
-
+  console.log(product)
   return (
     <div className="container mx-auto p-6">
       <div className="flex flex-col lg:flex-row gap-6">
@@ -111,16 +112,16 @@ const ProductDetailsPage = () => {
         </div>
 
         {/* تفاصيل المنتج */}
-        <div className="flex-1 flex flex-col gap-4">
+        <div  className="flex-1 flex flex-col gap-4">
           <h1 className="text-3xl font-bold">{product.name}</h1>
-          <p className="text-gray-700">{product.description}</p>
-          <p className="text-lg font-semibold text-blue-700">${product.price.toFixed(2)}</p>
-          <button
+          <p dir="rtl" className="text-gray-700 text-right"> {product.description}</p>
+          <p className="text-lg font-semibold text-blue-700">prix : {product.price.toFixed(2)} da </p>
+          <Button
             onClick={handleAddToCart}
             className="bg-blue-500 max-w-52 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
           >
             طلب المنتج
-          </button>
+          </Button>
         </div>
       </div>
     </div>

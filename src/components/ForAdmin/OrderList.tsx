@@ -173,20 +173,13 @@ const OrderList = () => {
 
   return (
     <div className="p-1 bg-gray-50 rounded-lg shadow-lg min-h-[350px] overflow-auto">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between flex-wrap  items-center mb-6">
         <Button
           onClick={handlePrintOrders}
           className="bg-green-500 text-sm text-white  "
         >
            print orders
         </Button>
-        <input
-          type="text"
-          placeholder="Search by name or phone..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="px-4 py-3 border border-gray-300 rounded-md text-sm w-1/3 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 transition duration-150 ease-in-out"
-        />
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
@@ -196,6 +189,13 @@ const OrderList = () => {
           <option value="confirmed">Confirmed Only</option>
           <option value="unconfirmed">Unconfirmed Only</option>
         </select>
+        <input
+          type="text"
+          placeholder="Search by name or phone..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="px-4 py-3 border border-gray-300 rounded-md text-sm w-fit  shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 transition duration-150 ease-in-out"
+        />
       </div>
       {/* Order List */}
       {filteredOrders.length === 0 ? (

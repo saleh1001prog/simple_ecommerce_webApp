@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { FiMenu, FiX } from "react-icons/fi";
 import { useRouter } from "next/navigation";
+import { Button } from "./ui/button";
 
 function Header() {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
@@ -58,13 +59,13 @@ function Header() {
       </nav>
 
       {/* Mobile Menu Icon */}
-      <button
+      <Button
         onClick={toggleMenu}
         className="md:hidden focus:outline-none"
         aria-label="Toggle menu"
       >
         {isMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
-      </button>
+      </Button>
 
       {/* Mobile Menu */}
       {isMenuOpen && (
