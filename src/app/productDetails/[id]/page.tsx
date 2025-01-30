@@ -1,12 +1,12 @@
 //my-app\src\app\productDetails\[id]\page.tsx
-"use client";
+import ProductDetailsWrapper from "./ProductDetailsWrapper";
+import { Metadata } from "next";
 
-import ProductDetailsPage from "@/components/ProductDetailsPage";
-
-
-const page = () => {
-  return <ProductDetailsPage/>
- 
+export const metadata: Metadata = {
+  title: 'تفاصيل المنتج',
+  description: 'عرض تفاصيل المنتج الكاملة',
 };
 
-export default page;
+export default function Page() {
+  return <ProductDetailsWrapper />;
+}

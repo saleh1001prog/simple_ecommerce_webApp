@@ -2,8 +2,7 @@ import ProductForm from "@/components/ForAdmin/ProductForm";
 
 const AddProductPage = () => {
   return (
-    <div>
-      <h1>Add a New Product</h1>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <ProductForm />
     </div>
   );

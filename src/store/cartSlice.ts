@@ -1,7 +1,27 @@
 // store/cartSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { persistReducer } from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
+import createWebStorage from 'redux-persist/lib/storage/createWebStorage';
+
+// Create a noop storage
+const createNoopStorage = () => {
+  return {
+    getItem(_key: string) {
+      return Promise.resolve(null);
+    },
+    setItem(_key: string, value: any) {
+      return Promise.resolve(value);
+    },
+    removeItem(_key: string) {
+      return Promise.resolve();
+    },
+  };
+};
+
+// Get storage that works on both client and server
+const storage = typeof window !== 'undefined' 
+  ? createWebStorage('local')
+  : createNoopStorage();
 
 interface CartProduct {
   productId: string;
@@ -54,6 +74,7 @@ const cartSlice = createSlice({
 const persistConfig = {
   key: 'cart',
   storage,
+  whitelist: ['items'], // Only persist items array
 };
 
 export const { addToCart, removeFromCart, updateQuantity, clearCart } = cartSlice.actions;

@@ -1,36 +1,38 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { addToCart } from "../store/cartSlice";
-import { useRouter } from "next/navigation";
-import { Skeleton } from "./ui/skeleton";
+import { addToCart } from "@/store/cartSlice";
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "./ui/button";
+import { FiShoppingCart, FiLoader, FiImage } from "react-icons/fi";
+import toast from "react-hot-toast";
+import { useLanguage } from '@/contexts/LanguageContext';
+import ProductImage from '@/components/ui/ProductImage';
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState(""); // State for search query
+  const [error, setError] = useState(null);
   const dispatch = useDispatch();
-  const router = useRouter();
+  const { t, language } = useLanguage();
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(
-          `/api/products/FilterProduct?search=${searchQuery}`
-        );
-        const data = await response.json();
-        setProducts(data);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchProducts();
-  }, [searchQuery]); // Re-run fetch when search query changes
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch("/api/products");
+      if (!response.ok) throw new Error();
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      setError(t('productList.error'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAddToCart = (product) => {
     dispatch(
@@ -42,77 +44,79 @@ const ProductList = () => {
         imageUrl: product.images[0],
       })
     );
+    toast.success(t('cart.updateSuccess'));
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <FiLoader className="w-6 h-6 animate-spin text-blue-600 mr-2" />
+        <span>{t('productList.loading')}</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center text-red-600 min-h-[60vh] flex items-center justify-center">
+        {error}
+      </div>
+    );
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="text-center text-gray-600 min-h-[60vh] flex items-center justify-center">
+        {t('productList.noProducts')}
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col items-center p-5">
-      <input
-        type="text"
-        placeholder="ابحث عن المنتج"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        className="mb-4 p-2 border rounded w-80 text-right"
-      />
-      <div className="flex flex-wrap gap-2 justify-center">
-        {loading ? (
-          Array.from({ length: 4 }).map((_, index) => (
-            <div
-              key={index}
-              className="w-[300px] border rounded-lg p-4 shadow-md"
-            >
-              <Skeleton className="w-full h-[200px] rounded-t-lg" />
-              <div className="mt-4 flex flex-col gap-y-1">
-                <Skeleton className="h-6 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-                <div className="flex justify-between items-center mt-2">
-                  <Skeleton className="h-8 w-20" />
-                  <Skeleton className="h-8 w-20" />
-                </div>
-              </div>
-            </div>
-          ))
-        ) : products.length > 0 ? (
-          products.map((product) => (
-            <div
-              key={product._id}
-              className="w-[300px] border rounded-lg p-4 shadow-md"
-            >
-              <div className="w-full h-[200px]">
-                <Image
+    <div className="container mx-auto px-4 py-8" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+        {t('productList.title')}
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {products.map((product) => (
+          <div
+            key={product._id}
+            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+          >
+            <Link href={`/productDetails/${product._id}`}>
+              <div className="relative h-48 w-full">
+                <ProductImage
                   src={product.images[0]}
                   alt={product.name}
-                  width={500} // العرض المناسب للصورة
-                  height={500} // الارتفاع المناسب للصورة
-                  className="w-full h-full object-contain rounded-t-lg"
+                  fill
+                  className="object-cover"
                 />
               </div>
-              <div className="mt-4 flex flex-col gap-y-1">
-                <h3 className="text-lg font-semibold">{product.name}</h3>
-                <p className="text-gray-600">${product.price}</p>
-                <div className="flex justify-between items-center">
-                  <Button
-                    onClick={() =>
-                      router.push(`/productDetails/${product._id}`)
-                    }
-                    className="flex items-center bg-gray-500 text-white px-3 py-2 rounded hover:bg-gray-600"
-                    aria-label={`View details of ${product.name}`}
-                  >
-                    التفاصيل
+            </Link>
+            <div className="p-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                {product.name}
+              </h3>
+              <p className="text-blue-600 font-bold mb-4">
+                {t('productList.price')}: {product.price} DA
+              </p>
+              <div className="flex space-x-2 rtl:space-x-reverse">
+                <Button
+                  onClick={() => handleAddToCart(product)}
+                  className="flex-1"
+                >
+                  <FiShoppingCart className="mr-2 rtl:ml-2" />
+                  {t('productList.addToCart')}
+                </Button>
+                <Link href={`/productDetails/${product._id}`}>
+                  <Button variant="outline">
+                    {t('productList.details')}
                   </Button>
-                  <Button
-                    onClick={() => handleAddToCart(product)}
-                    className="flex items-center bg-blue-500 gap-x-2 text-white px-3 py-2 rounded hover:bg-blue-600"
-                    aria-label={`Add ${product.name} to cart`}
-                  >
-                    طلب المنتج
-                  </Button>
-                </div>
+                </Link>
               </div>
             </div>
-          ))
-        ) : (
-          <p className="text-center text-gray-500">لا توجد منتجات حالياً</p>
-        )}
+          </div>
+        ))}
       </div>
     </div>
   );

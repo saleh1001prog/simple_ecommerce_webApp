@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { addToCart } from "../store/cartSlice";
-import { useParams } from "next/navigation";
+import { addToCart } from "@/store/cartSlice";
 import Image from "next/image";
 import { Button } from "./ui/button";
+import { FiMinus, FiPlus, FiShoppingCart, FiLoader, FiImage } from "react-icons/fi";
+import toast from "react-hot-toast";
+import { useLanguage } from '@/contexts/LanguageContext';
+import ProductImage from "./ui/ProductImage";
 
 interface Product {
   _id: string;
@@ -15,113 +18,198 @@ interface Product {
   images: string[];
 }
 
-const ProductDetailsPage = () => {
-  const { id } = useParams<{ id: string }>();
+interface Props {
+  productId: string;
+}
+
+
+
+const ProductDetailsPage = ({ productId }: Props) => {
   const [product, setProduct] = useState<Product | null>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [quantity, setQuantity] = useState(1);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [adding, setAdding] = useState(false);
+  const { t, language } = useLanguage();
+
   const dispatch = useDispatch();
 
-  const fetchProduct = useCallback(async () => {
-    if (!id) return;
-
-    try {
-      setError(null);
-      setIsLoading(true);
-      const response = await fetch(`/api/products/product/${id}`);
-      if (!response.ok) throw new Error("Failed to fetch product details.");
-      const data = await response.json();
-      setProduct(data);
-    } catch (err: any) {
-      setError(err.message || "Something went wrong.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [id]);
-
   useEffect(() => {
-    fetchProduct();
-  }, [fetchProduct]);
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch(`/api/products/${productId}`);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "فشل في تحميل المنتج");
+        }
+        const data = await response.json();
+        setProduct(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "حدث خطأ غير متوقع");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleThumbnailClick = (index: number) => {
-    setCurrentImageIndex(index);
+    if (productId) {
+      fetchProduct();
+    }
+  }, [productId]);
+
+  const handleQuantityChange = (change: number) => {
+    const newQuantity = quantity + change;
+    if (newQuantity >= 1) {
+      setQuantity(newQuantity);
+    }
   };
 
-  const handleAddToCart = () => {
-    if (product) {
+  const handleAddToCart = async () => {
+    setAdding(true);
+    try {
       dispatch(
         addToCart({
           productId: product._id,
           name: product.name,
           price: product.price,
-          quantity: 1,
+          quantity,
           imageUrl: product.images[0],
         })
       );
-      alert("تمت إضافة المنتج إلى السلة!");
+      toast.success(t('cart.updateSuccess'));
+    } catch (error) {
+      toast.error(t('common.error'));
+    } finally {
+      setAdding(false);
     }
   };
 
-  if (isLoading) {
-    return <div className="text-center p-10">جاري تحميل تفاصيل المنتج...</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex items-center space-x-2 rtl:space-x-reverse">
+          <FiLoader className="w-6 h-6 animate-spin text-blue-600" />
+          <span className="text-gray-600">{t('common.loading')}</span>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="text-center p-10 text-red-500">{error}</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()}>إعادة المحاولة</Button>
+        </div>
+      </div>
+    );
   }
 
   if (!product) {
-    return <div className="text-center p-10">لم يتم العثور على المنتج.</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <p className="text-gray-600">{t('common.error')}</p>
+      </div>
+    );
   }
-  console.log(product)
+
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* قسم الصور */}
-        <div className="flex-1">
-          <div className="flex space-x-2 mb-4 justify-center">
-            {product.images.map((image, index) => (
-              <div
-                key={index}
-                className={`border rounded cursor-pointer ${
-                  index === currentImageIndex ? "border-blue-500" : "border-gray-300"
-                }`}
-                onClick={() => handleThumbnailClick(index)}
-              >
-                <Image
-                  src={image}
-                  alt={`Thumbnail ${index + 1}`}
-                  width={64}
-                  height={64}
-                  className="object-cover rounded"
-                />
-              </div>
-            ))}
-          </div>
-          <div className="bg-gray-200 h-[500px] rounded-lg overflow-hidden flex justify-center items-center">
-            <Image
-              src={product.images[currentImageIndex]}
-              alt={`Image of ${product.name}`}
-              width={500}
-              height={500}
-              className="object-contain h-full "
+    <div className="container mx-auto px-4 py-8" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Product Images */}
+        <div className="space-y-4">
+          <div className="relative aspect-square mb-4">
+            <ProductImage
+              src={product.images[selectedImage]}
+              alt={product.name}
+              fill
+              className="rounded-lg"
               priority
             />
           </div>
+          
+          {/* Thumbnail Gallery */}
+          {product.images.length > 1 && (
+            <div className="grid grid-cols-4 gap-4">
+              {product.images.map((image, index) => (
+                <button
+                  key={image}
+                  onClick={() => setSelectedImage(index)}
+                  className={`relative w-20 h-20 ${
+                    selectedImage === index ? 'ring-2 ring-blue-500' : ''
+                  }`}
+                >
+                  <ProductImage
+                    src={image}
+                    alt={`${product.name} thumbnail ${index + 1}`}
+                    fill
+                    className="rounded-md object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* تفاصيل المنتج */}
-        <div  className="flex-1 flex flex-col gap-4">
-          <h1 className="text-3xl font-bold">{product.name}</h1>
-          <p dir="rtl" className="text-gray-700 text-right"> {product.description}</p>
-          <p className="text-lg font-semibold text-blue-700">prix : {product.price.toFixed(2)} da </p>
-          <Button
-            onClick={handleAddToCart}
-            className="bg-blue-500 max-w-52 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
-          >
-            طلب المنتج
-          </Button>
+        {/* Product Info */}
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
+            <p className="mt-4 text-xl font-semibold text-blue-600">
+              {product.price} دج
+            </p>
+          </div>
+
+          <div className="prose prose-sm max-w-none">
+            <p className="text-gray-600 leading-relaxed">{product.description}</p>
+          </div>
+
+          <div className="pt-6 border-t border-gray-200">
+            <div className="flex items-center justify-between mb-6">
+              <span className="text-gray-700 font-medium">{t('productDetails.quantity')}:</span>
+              <div className="flex items-center space-x-4 rtl:space-x-reverse">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleQuantityChange(-1)}
+                  disabled={quantity <= 1}
+                >
+                  <FiMinus className="h-4 w-4" />
+                </Button>
+                <span className="text-lg font-semibold w-12 text-center">
+                  {quantity}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleQuantityChange(1)}
+                >
+                  <FiPlus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <Button
+              onClick={handleAddToCart}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg transition-colors duration-200"
+              disabled={adding}
+            >
+              {adding ? (
+                <div className="flex items-center justify-center space-x-2 rtl:space-x-reverse">
+                  <FiLoader className="animate-spin" />
+                  <span>{t('productDetails.addToCart')}</span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center space-x-2 rtl:space-x-reverse">
+                  <FiShoppingCart className="h-5 w-5" />
+                  <span>{t('productDetails.addToCart')}</span>
+                </div>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </div>

@@ -8,6 +8,9 @@ import {
   DialogFooter,
 } from "../ui/dialog";
 import { Button } from "../ui/button";
+import { FiPrinter, FiSearch, FiFilter, FiEye, FiTrash2, FiCheck } from "react-icons/fi";
+import toast from 'react-hot-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Product {
   _id: string;
@@ -18,56 +21,77 @@ interface Product {
 interface Order {
   _id: string;
   products: Array<{
-    _id: Key | null | undefined; productId: Product; quantity: number; price: number 
-}>;
+    _id: Key | null | undefined;
+    productId: Product;
+    quantity: number;
+    price: number;
+  }>;
   name: string;
   surname: string;
   phone: string;
   confirmed: boolean;
   createdAt: string;
-  state : string
+  state: string;
 }
 
 const OrderDetails = ({ order }: { order: Order }) => {
+  const { t, language } = useLanguage();
   const totalAmount = order.products.reduce((sum, item) => {
-    // Only add to total if product exists
     return item.productId ? sum + item.quantity * item.productId.price : sum;
   }, 0);
 
   return (
-    <div className="p-6 bg-gray-50 rounded-lg shadow-sm">
-      <h3 className="text-lg font-semibold mb-4 text-gray-800">User Information</h3>
-      <p className="text-gray-700">Date: {new Date(order.createdAt).toLocaleDateString()}</p>
-      <p className="text-gray-700">Wilaya: {order.state}</p>
-      <p className="text-gray-700">Name & Last Name: {order.name} {order.surname}</p>
-      <p className="text-gray-700">Phone Number: {order.phone}</p>
-      <hr className="my-4 border-gray-300"/>
-      
-      <div className="mt-4">
-        <p className="font-medium text-gray-800 mb-2">Products Ordered</p>
-        {order.products.map((item) => (
-          item.productId ? (
-            <div key={item.productId._id} className="flex justify-between border-b border-gray-300 py-2">
-              <span className="text-gray-700">{item.productId.name} - x{item.quantity}</span>
-              <span className="text-gray-700">{item.quantity * item.productId.price} da</span>
-            </div>
-          ) : (
-            <div key={item._id} className="flex justify-between border-b border-gray-300 py-2 text-red-600">
-              <span className="text-gray-700">This product has been removed from the catalog.</span>
-            </div>
-          )
-        ))}
+    <div className="p-6 bg-gray-50 rounded-lg space-y-6">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold text-gray-800">{t('orderList.customerInfo')}</h3>
+          <p className="text-gray-600">{t('orderList.orderDate')}: {new Date(order.createdAt).toLocaleDateString(language)}</p>
+          <p className="text-gray-600">{t('orderList.state')}: {order.state}</p>
+          <p className="text-gray-600">{t('orderList.fullName')}: {order.name} {order.surname}</p>
+          <p className="text-gray-600">{t('orderList.phone')}: {order.phone}</p>
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold text-gray-800">{t('orderList.orderStatus')}</h3>
+          <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm ${
+            order.confirmed ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+          }`}>
+            {order.confirmed ? t('orderList.confirmed') : t('orderList.pending')}
+          </div>
+        </div>
       </div>
-    
-      <div className="flex justify-between mt-4 font-semibold text-gray-800">
-        <span>Total:</span>
-        <span>{totalAmount} Da</span>
+
+      <div className="mt-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">{t('orderList.orderedProducts')}</h3>
+        <div className="space-y-3">
+          {order.products.map((item) => (
+            item.productId ? (
+              <div key={item.productId._id} className="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm">
+                <div className="flex items-center space-x-4 rtl:space-x-reverse">
+                  <span className="font-medium text-gray-800">{item.productId.name}</span>
+                  <span className="text-gray-500">×{item.quantity}</span>
+                </div>
+                <span className="font-semibold text-blue-600">{item.quantity * item.productId.price} DA</span>
+              </div>
+            ) : (
+              <div key={String(item._id)} className="p-3 bg-red-50 text-red-600 rounded-lg">
+                {t('orderList.removedProduct')}
+              </div>
+            )
+          ))}
+        </div>
+      </div>
+
+      <div className="flex justify-end pt-4 border-t">
+        <div className="text-xl font-bold text-gray-900">
+          {t('orderList.total')}: {totalAmount} DA
+        </div>
       </div>
     </div>
   );
 };
 
 const OrderList = () => {
+  const { t, language } = useLanguage();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -105,37 +129,41 @@ const OrderList = () => {
 
   const handleDelete = async () => {
     if (!selectedOrderId) return;
+
     try {
-      const response = await fetch("/api/orders", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: selectedOrderId }),
+      const response = await fetch(`/api/orders`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: selectedOrderId })
       });
-      if (!response.ok) throw new Error("Error deleting order");
-      setOrders((prevOrders) =>
-        prevOrders.filter((order) => order._id !== selectedOrderId)
-      );
-    } catch (error) {
-      console.error(error);
-    } finally {
+
+      if (!response.ok) throw new Error();
+
+      setOrders(orders.filter(order => order._id !== selectedOrderId));
+      toast.success(t('orderList.deleteSuccess'));
       closeDeleteDialog();
+    } catch (error) {
+      toast.error(t('orderList.deleteError'));
+      console.error(error);
     }
   };
 
-  const handleConfirm = async (orderId: string) => {
+  const handleConfirmOrder = async (orderId: string) => {
     try {
-      const response = await fetch("/api/orders", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: orderId, confirmed: true }),
+      const response = await fetch(`/api/orders`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: orderId, confirmed: true })
       });
-      if (!response.ok) throw new Error("Error confirming order");
-      setOrders((prevOrders) =>
-        prevOrders.map((order) =>
-          order._id === orderId ? { ...order, confirmed: true } : order
-        )
-      );
+
+      if (!response.ok) throw new Error();
+
+      toast.success(t('orderList.confirmSuccess'));
+      setOrders(orders.map(order => 
+        order._id === orderId ? { ...order, confirmed: true } : order
+      ));
     } catch (error) {
+      toast.error(t('orderList.confirmError'));
       console.error(error);
     }
   };
@@ -172,131 +200,170 @@ const OrderList = () => {
   }
 
   return (
-    <div className="p-1 bg-gray-50 rounded-lg shadow-lg min-h-[350px] overflow-auto">
-      <div className="flex justify-between flex-wrap  items-center mb-6">
-        <Button
-          onClick={handlePrintOrders}
-          className="bg-green-500 text-sm text-white  "
-        >
-           print orders
-        </Button>
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-5 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 transition duration-150 ease-in-out"
-        >
-          <option value="all">All Orders</option>
-          <option value="confirmed">Confirmed Only</option>
-          <option value="unconfirmed">Unconfirmed Only</option>
-        </select>
-        <input
-          type="text"
-          placeholder="Search by name or phone..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="px-4 py-3 border border-gray-300 rounded-md text-sm w-fit  shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 transition duration-150 ease-in-out"
-        />
+    <div className="p-6 bg-white rounded-xl shadow-lg space-y-6" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="flex items-center space-x-4 rtl:space-x-reverse">
+          <Button
+            onClick={handlePrintOrders}
+            className="flex items-center space-x-2 bg-green-600 hover:bg-green-700"
+          >
+            <FiPrinter className="w-4 h-4" />
+            <span>{t('orderList.printOrders')}</span>
+          </Button>
+          
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          >
+            <option value="all">{t('orderList.allOrders')}</option>
+            <option value="confirmed">{t('orderList.confirmedOrders')}</option>
+            <option value="unconfirmed">{t('orderList.unconfirmedOrders')}</option>
+          </select>
+        </div>
+
+        <div className="relative w-full sm:w-64">
+          <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder={t('orderList.searchPlaceholder')}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          />
+        </div>
       </div>
-      {/* Order List */}
+
       {filteredOrders.length === 0 ? (
-        <div className="text-center text-gray-600">
-          <p>No order available.</p>
+        <div className="text-center py-12">
+          <p className="text-gray-500 text-lg">{t('orderList.noOrders')}</p>
         </div>
       ) : (
-        <table className="w-full text-sm bg-white ">
-          <thead>
-            <tr>
-              <th className="py-2 px-4 border-b">Order Date</th>
-              <th className="py-2 px-4 border-b">Customer</th>
-              <th className="py-2 px-4 border-b">Phone</th>
-              <th className="py-2 px-4 border-b">Status</th>
-              <th className="py-2 px-4 border-b">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredOrders.map((order) => (
-              <tr key={order._id} className="text-center">
-                <td className="py-2 px-4 border-b">
-                  {new Date(order.createdAt).toLocaleDateString()}
-                </td>
-                <td className="py-2 px-4 border-b">
-                  {order.name} {order.surname}
-                </td>
-                <td className="py-2 px-4 border-b">{order.phone}</td>
-                <td className="py-2 px-4 border-b">
-                  {order.confirmed ? "Confirmed" : "Unconfirmed"}
-                </td>
-                <td className="py-2 px-4 border-b flex gap-2 justify-center">
-                  <Button
-                    onClick={() => openDetailsDialog(order)}
-                    className="bg-gray-500 text-white"
-                  >
-                    details
-                  </Button>
-                  <Button
-                    onClick={() => openDeleteDialog(order._id)}
-                    className="bg-red-500 text-white"
-                  >
-                    Delete
-                  </Button>
-                  {!order.confirmed && (
-                    <Button
-                      onClick={() => handleConfirm(order._id)}
-                      className="bg-blue-500 text-white "
-                    >
-                      Confirm
-                    </Button>
-                  )}
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  {t('orderList.orderDate')}
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  {t('orderList.fullName')}
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  {t('orderList.phone')}
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  {t('orderList.orderStatus')}
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  {t('common.actions')}
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredOrders.map((order) => (
+                <tr key={order._id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {new Date(order.createdAt).toLocaleDateString(language)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {order.name} {order.surname}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {order.phone}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      order.confirmed ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {order.confirmed ? t('orderList.confirmed') : t('orderList.pending')}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="flex items-center space-x-3 rtl:space-x-reverse">
+                      <Button
+                        onClick={() => openDetailsDialog(order)}
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center space-x-1"
+                      >
+                        <FiEye className="w-4 h-4" />
+                        <span>{t('orderList.details')}</span>
+                      </Button>
+                      
+                      {!order.confirmed && (
+                        <Button
+                          onClick={() => handleConfirmOrder(order._id)}
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center space-x-1 text-green-600 hover:text-green-700"
+                        >
+                          <FiCheck className="w-4 h-4" />
+                          <span>{t('orderList.confirm')}</span>
+                        </Button>
+                      )}
+                      
+                      <Button
+                        onClick={() => openDeleteDialog(order._id)}
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center space-x-1 text-red-600 hover:text-red-700"
+                      >
+                        <FiTrash2 className="w-4 h-4" />
+                        <span>{t('orderList.delete')}</span>
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
-      {/* Delete confirmation dialog */}
+
+      {/* Delete Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Delete Confirmation</DialogTitle>
+            <DialogTitle className="text-xl font-semibold">{t('orderList.deleteTitle')}</DialogTitle>
           </DialogHeader>
-          <p>Are you sure you want to delete this order?</p>
-          <DialogFooter className="flex justify-end mt-4">
-            <div className="flex w-full justify-between">
-              <Button
-                onClick={closeDeleteDialog}
-                className="bg-gray-200 text-gray-700"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleDelete}
-                className="bg-red-500 "
-              >
-                Delete
-              </Button>
-            </div>
+          <div className="py-4">
+            <p className="text-gray-600">{t('orderList.deleteConfirm')}</p>
+          </div>
+          <DialogFooter className="flex justify-end space-x-2 rtl:space-x-reverse">
+            <Button
+              onClick={closeDeleteDialog}
+              variant="outline"
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              onClick={handleDelete}
+              variant="destructive"
+            >
+              {t('orderList.delete')}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      {/* Order details dialog */}
-      {selectedOrder && (
-        <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle> order details</DialogTitle>
-            </DialogHeader>
-            <OrderDetails order={selectedOrder} />
-            <DialogFooter className="flex justify-end mt-4">
-              <Button
-                onClick={closeDetailsDialog}
-                className="bg-gray-200 text-gray-700 "
-              >
-                close
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+
+      {/* Details Dialog */}
+      <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">{t('orderList.details')}</DialogTitle>
+          </DialogHeader>
+          {selectedOrder && <OrderDetails order={selectedOrder} />}
+          <DialogFooter>
+            <Button
+              onClick={closeDetailsDialog}
+              variant="outline"
+            >
+              {t('common.cancel')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -1,53 +1,86 @@
 import Link from 'next/link';
 import React, { useState } from 'react';
-import { FiMenu, FiX } from 'react-icons/fi';
+import { FiMenu, FiX, FiPlus, FiShoppingBag, FiGrid } from 'react-icons/fi';
+import { Button } from '../ui/button';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 function DashboardHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { t, language } = useLanguage();
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const menuItems = [
+    { 
+      href: '/dashboardAdmin/addProducts', 
+      icon: <FiPlus />, 
+      label: t('dashboard.addProducts')
+    },
+    { 
+      href: '/dashboardAdmin/productsOrders', 
+      icon: <FiShoppingBag />, 
+      label: t('dashboard.orders')
+    },
+    { 
+      href: '/dashboardAdmin/ProductsStudio', 
+      icon: <FiGrid />, 
+      label: t('dashboard.productsStudio')
+    },
+  ];
 
   return (
-    <div className=" header bg-white text-slate-900 p-4 flex justify-between items-center relative ">
-      <div className="text-xl">Dashboard</div>
-      
-      {/* Desktop Menu */}
-      <nav className="hidden md:flex flex-row gap-x-4">
-        <Link href="/dashboardAdmin/addProducts" className="hover:underline">
-          Add Products
-        </Link>
-        <Link href="/dashboardAdmin/productsOrders" className="hover:underline">
-          Products Orders
-        </Link>
-        <Link href="/dashboardAdmin/ProductsStudio" className="hover:underline">
-          Products Studio
-        </Link>
-      </nav>
-      
-      {/* Mobile Menu Icon */}
-      <button
-        onClick={toggleMenu}
-        className="md:hidden focus:outline-none"
-        aria-label="Toggle menu"
-      >
-        {isMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
-      </button>
-      
-      {/* Mobile Menu */}
+    <header className="sticky top-0 z-40 w-full bg-white border-b shadow-sm">
+      <div className="px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          <div className="flex items-center">
+            <h1 className="text-xl font-semibold text-gray-900">
+              {t('dashboard.title')}
+            </h1>
+          </div>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-4 rtl:space-x-reverse" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+            {menuItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-colors duration-200"
+              >
+                <span className="mr-2 rtl:ml-2 rtl:mr-0">{item.icon}</span>
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Mobile Menu Button */}
+          <Button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+          >
+            {isMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+          </Button>
+        </div>
+      </div>
+
+      {/* Mobile Navigation */}
       {isMenuOpen && (
-        <nav className="absolute top-full left-0 w-full bg-white text-black p-4 flex flex-col space-y-2 md:hidden">
-          <Link href="/dashboardAdmin/addProducts" className="hover:underline p-3  border-b-2 border-zinc-100 " onClick={toggleMenu}>
-            Add Products
-          </Link>
-          <Link href="/dashboardAdmin/productsOrders" className="hover:underline  p-3  border-b-2 border-zinc-100" onClick={toggleMenu}>
-            Products Orders
-          </Link>
-          <Link href="/dashboardAdmin/ProductsStudio" className="hover:underline  p-3 border-b-2 border-zinc-100" onClick={toggleMenu}>
-            Products Studio
-          </Link>
+        <nav className="md:hidden border-t border-gray-200" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+          <div className="space-y-1 px-4 py-3">
+            {menuItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex items-center px-3 py-2 text-base font-medium text-gray-700 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-colors duration-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <span className="mr-3 rtl:ml-3 rtl:mr-0 text-gray-500">{item.icon}</span>
+                {item.label}
+              </Link>
+            ))}
+          </div>
         </nav>
       )}
-    </div>
+    </header>
   );
 }
 

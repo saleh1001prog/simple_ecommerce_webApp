@@ -1,38 +1,45 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose from 'mongoose';
 
-interface IOrderProduct {
-  productId: mongoose.Schema.Types.ObjectId;
-  quantity: number;
-  price: number;
-}
-
-interface IOrder extends Document {
-  products: IOrderProduct[];
-  name: string;
-  surname: string;
-  phone: string;
-  state: string;
-  confirmed: boolean;
-}
-
-const orderSchema: Schema = new Schema(
-  {
-    products: [
-      {
-        productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
-        quantity: { type: Number, required: true },
-        price: { type: Number, required: true },
-      },
-    ],
-    name: { type: String, required: true },
-    surname: { type: String, required: true },
-    phone: { type: String, required: true },
-    state: { type: String, required: true },
-    confirmed: { type: Boolean, default: false },
+const orderSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
   },
-  { timestamps: true }
-);
+  surname: {
+    type: String,
+    required: true
+  },
+  phone: {
+    type: String,
+    required: true
+  },
+  state: {
+    type: String,
+    required: true
+  },
+  products: [{
+    productId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product',
+      required: true
+    },
+    quantity: {
+      type: Number,
+      required: true
+    },
+    price: {
+      type: Number,
+      required: true
+    }
+  }],
+  confirmed: {
+    type: Boolean,
+    default: false
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
 
-const Order = mongoose.models.Order || mongoose.model<IOrder>('Order', orderSchema);
-
-export default Order;
+export default mongoose.models.Order || mongoose.model('Order', orderSchema);

@@ -1,82 +1,127 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
+import dbConnect from '@/lib/mongodb';
 import Order from '@/models/Order';
-import Product from '@/models/Product';
 
 export async function POST(req: NextRequest) {
-  await connectDB();
+  await dbConnect();
 
-  const { items, name, surname, phone, state } = await req.json();
+  try {
+    const body = await req.json();
+    
+    // التحقق من وجود البيانات المطلوبة
+    if (!body.name || !body.surname || !body.phone || !body.state || !body.products) {
+      return NextResponse.json(
+        { error: 'جميع الحقول مطلوبة' },
+        { status: 400 }
+      );
+    }
 
-  // تحقق من المنتجات والكميات داخل الطلب
-  const productDetails = await Promise.all(
-    items.map(async (item: { productId: string; quantity: number }) => {
-      const product = await Product.findById(item.productId);
-      if (!product) throw new Error(`Product with ID ${item.productId} not found`);
-      return {
-        productId: product._id,
-        quantity: item.quantity,
-        price: product.price,
-      };
-    })
-  );
+    // إنشاء طلب جديد
+    const order = new Order({
+      name: body.name,
+      surname: body.surname,
+      phone: body.phone,
+      state: body.state,
+      products: body.products,
+      confirmed: false,
+      createdAt: new Date()
+    });
 
-  // إنشاء طلب جديد باستخدام تفاصيل المنتجات
-  const order = new Order({
-    products: productDetails,
-    name,
-    surname,
-    phone,
-    state,
-    confirmed: false,
-  });
+    await order.save();
 
-  await order.save();
-  return NextResponse.json({ message: 'Order placed successfully', order });
+    return NextResponse.json({ 
+      message: 'تم إنشاء الطلب بنجاح',
+      order 
+    });
+
+  } catch (error) {
+    console.error('Error creating order:', error);
+    return NextResponse.json(
+      { error: 'حدث خطأ أثناء إنشاء الطلب' },
+      { status: 500 }
+    );
+  }
 }
 
 export async function PUT(req: NextRequest) {
-  await connectDB();
-
-  const { id, confirmed } = await req.json();
+  await dbConnect();
 
   try {
-    // تحديث حالة التأكيد للطلب بناءً على معرف الطلب
-    const order = await Order.findById(id);
-    if (!order) {
-      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    const body = await req.json();
+    const { id, confirmed } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'معرف الطلب مطلوب' },
+        { status: 400 }
+      );
     }
 
-    order.confirmed = confirmed;
-    await order.save();
+    const order = await Order.findByIdAndUpdate(
+      id,
+      { confirmed },
+      { new: true }
+    );
 
-    return NextResponse.json({ message: 'Order confirmed successfully', order });
+    if (!order) {
+      return NextResponse.json(
+        { error: 'لم يتم العثور على الطلب' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ 
+      message: 'تم تحديث الطلب بنجاح',
+      order 
+    });
+
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: 'Error confirming order' }, { status: 500 });
+    console.error('Error updating order:', error);
+    return NextResponse.json(
+      { error: 'حدث خطأ أثناء تحديث الطلب' },
+      { status: 500 }
+    );
   }
 }
 
 export async function DELETE(req: NextRequest) {
-  await connectDB();
+  await dbConnect();
 
   try {
-    const { id } = await req.json();
-    const deletedOrder = await Order.findByIdAndDelete(id);
+    const body = await req.json();
+    const { id } = body;
 
-    if (!deletedOrder) {
-      return NextResponse.json({ message: 'Order not found' }, { status: 404 });
+    if (!id) {
+      return NextResponse.json(
+        { error: 'معرف الطلب مطلوب' },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json({ message: 'Order deleted successfully' });
+    const order = await Order.findByIdAndDelete(id);
+
+    if (!order) {
+      return NextResponse.json(
+        { error: 'لم يتم العثور على الطلب' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ 
+      message: 'تم حذف الطلب بنجاح' 
+    });
+
   } catch (error) {
     console.error('Error deleting order:', error);
-    return NextResponse.json({ message: 'Failed to delete order', error }, { status: 500 });
+    return NextResponse.json(
+      { error: 'حدث خطأ أثناء حذف الطلب' },
+      { status: 500 }
+    );
   }
 }
 
 export async function GET(req: NextRequest) {
-  await connectDB();
+  await dbConnect();
 
   const search = req.nextUrl.searchParams.get('search') || '';
   const showUnconfirmedOnly = req.nextUrl.searchParams.get('showUnconfirmedOnly') === 'true';

@@ -4,8 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Layout from "@/components/layout";
 import Cart from "@/components/Cart";
-
-
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 export const metadata: Metadata = {
   title: "saleh dz",
@@ -19,15 +18,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-      >
-        <Layout>
-        <Header/>
-        <hr/>
-        <Cart/>
-        {children}
-        <Footer/>
-        </Layout>
+      <body>
+        <LanguageProvider>
+          <Layout>
+            <Header/>
+            <hr/>
+            <Cart/>
+            {children}
+            <Footer/>
+          </Layout>
+        </LanguageProvider>
       </body>
     </html>
   );
