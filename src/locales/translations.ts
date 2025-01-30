@@ -49,7 +49,9 @@ export const translations = {
       updateError: "فشل في تحديث المنتج",
       update: "تحديث",
       cancel: "إلغاء",
-      delete: "حذف"
+      delete: "حذف",
+      pricePlaceholder: "أدخل سعر المنتج",
+      priceLabel: "السعر (دج)"
     },
     common: {
       loading: "جاري التحميل...",
@@ -57,7 +59,11 @@ export const translations = {
       success: "تمت العملية بنجاح",
       confirm: "تأكيد",
       cancel: "إلغاء",
-      actions: "الإجراءات"
+      actions: "الإجراءات",
+      update: "تحديث",
+      updating: "جاري التحميل الصور...",
+      deleting: "جاري الحذف...",
+      delete: "حذف"
     },
     header: {
       home: "الرئيسية",
@@ -129,7 +135,11 @@ export const translations = {
       addNewImages: "إضافة صور جديدة",
       chooseImages: "اختر الصور",
       edit: "تعديل",
-      delete: "حذف"
+      delete: "حذف",
+      deleteSuccess: "تم حذف المنتج بنجاح",
+      deleteError: "فشل في حذف المنتج",
+      updateSuccess: "تم تحديث المنتج بنجاح",
+      updateError: "فشل في تحديث المنتج"
     },
     orderList: {
       title: "طلبات المنتجات",
@@ -224,7 +234,9 @@ export const translations = {
       updateError: "Échec de la mise à jour du produit",
       update: "Mettre à jour",
       cancel: "Annuler",
-      delete: "Supprimer"
+      delete: "Supprimer",
+      pricePlaceholder:"prix (DA)" , 
+      priceLabel: "prix (DA)"
     },
     common: {
       loading: "Chargement...",
@@ -232,7 +244,11 @@ export const translations = {
       success: "Opération réussie",
       confirm: "Confirmer",
       cancel: "Annuler",
-      actions: "Actions"
+      actions: "Actions",
+      update: "Mettre à jour",
+      updating: "Téléchargement des images...",
+      deleting: "en cours...",
+      delete: "Supprimer"
     },
     header: {
       home: "Accueil",
@@ -304,7 +320,11 @@ export const translations = {
       addNewImages: "Ajouter de nouvelles images",
       chooseImages: "Choisir des images",
       edit: "Modifier",
-      delete: "Supprimer"
+      delete: "Supprimer",
+      deleteSuccess: "Produit supprimé avec succès",
+      deleteError: "Échec de la suppression du produit",
+      updateSuccess: "Produit mis à jour avec succès",
+      updateError: "Échec de la mise à jour du produit"
     },
     orderList: {
       title: "Commandes de produits",

@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import Image from "next/image";
 import { Button } from "../ui/button";
 import { FiUpload, FiX } from "react-icons/fi";
 import toast from 'react-hot-toast';
@@ -88,7 +87,7 @@ const ProductForm = () => {
       toast.error(t('products.descriptionRequired'));
       return false;
     }
-    if (!price || price <= 0) {
+    if (!price || Number(price) <= 0) {
       toast.error(t('products.validPriceRequired'));
       return false;
     }
@@ -154,7 +153,7 @@ const ProductForm = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t('products.price')} (DA)
+              {t('products.priceLabel')}
             </label>
             <input
               type="number"

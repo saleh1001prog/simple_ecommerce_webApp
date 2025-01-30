@@ -143,7 +143,6 @@ const Cart = () => {
             {t('cart.title')}
           </DialogTitle>
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">سلة المشتريات</h2>
             <Button
               variant="outline"
               className="text-red-600 hover:text-red-700"

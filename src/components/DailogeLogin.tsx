@@ -76,10 +76,12 @@ function DialogLogin({ onAdminLogin }: { onAdminLogin: (loggedIn: boolean) => vo
           <DialogTitle className="text-2xl font-bold text-center mb-2">
             {isAdmin ? "مرحباً بعودتك!" : "تسجيل دخول المسؤول"}
           </DialogTitle>
-          <DialogDescription className="text-center text-gray-600">
+          <div className="text-center text-gray-600 text-sm">
             {isAdmin ? (
               <div className="space-y-4">
-                <p className="font-medium">أنت مسجل الدخول كمسؤول: {process.env.NEXT_PUBLIC_ADMIN_USERNAME}</p>
+                <div className="font-medium">
+                  أنت مسجل الدخول كمسؤول: {process.env.NEXT_PUBLIC_ADMIN_USERNAME}
+                </div>
                 <Button
                   onClick={handleLogout}
                   variant="destructive"
@@ -91,7 +93,7 @@ function DialogLogin({ onAdminLogin }: { onAdminLogin: (loggedIn: boolean) => vo
             ) : (
               "الرجاء إدخال بيانات الاعتماد للوصول إلى لوحة التحكم"
             )}
-          </DialogDescription>
+          </div>
         </DialogHeader>
 
         {error && (

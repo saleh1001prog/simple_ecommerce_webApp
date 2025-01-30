@@ -1,9 +1,11 @@
 import dbConnect from '@/lib/mongodb';
 import Product from '@/models/Product';
 import { NextRequest } from 'next/server';
+import { Types } from 'mongoose';
+import { cache } from 'react';
 
 interface ProductDocument {
-  _id: any;
+  _id: Types.ObjectId;
   name: string;
   price: number;
   description: string;
@@ -11,26 +13,42 @@ interface ProductDocument {
   __v: number;
 }
 
-type Props = {
-  params: {
-    id: Promise<string> | string;
-  };
-};
+// Cache the database connection
+const getDbConnection = cache(async () => {
+  await dbConnect();
+});
+
+// Cache the product fetch
+const getProduct = cache(async (id: string) => {
+  if (!Types.ObjectId.isValid(id)) {
+    return null;
+  }
+  return await Product.findById(new Types.ObjectId(id)).lean() as ProductDocument | null;
+});
 
 export async function GET(
-  _request: NextRequest,
-  { params }: Props
-) {
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+): Promise<Response> {
   try {
-    const id = typeof params.id === 'string' ? params.id : await params.id;
-    await dbConnect();
+    const { id } = await context.params;
     
-    const product = await Product.findById(id).lean() as ProductDocument;
+    // Connect to database (cached)
+    await getDbConnection();
+    
+    // Get product (cached)
+    const product = await getProduct(id);
 
     if (!product) {
-      return Response.json(
-        { error: 'لم يتم العثور على المنتج' },
-        { status: 404 }
+      return new Response(
+        JSON.stringify({ error: 'لم يتم العثور على المنتج' }), 
+        {
+          status: 404,
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=59'
+          }
+        }
       );
     }
 
@@ -39,12 +57,25 @@ export async function GET(
       _id: product._id.toString(),
     };
 
-    return Response.json(sanitizedProduct);
+    // Add cache headers
+    return new Response(
+      JSON.stringify(sanitizedProduct),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=59'
+        }
+      }
+    );
   } catch (error) {
     console.error('Error fetching product:', error);
-    return Response.json(
-      { error: 'حدث خطأ أثناء جلب المنتج' },
-      { status: 500 }
+    return new Response(
+      JSON.stringify({ error: 'حدث خطأ أثناء جلب المنتج' }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      }
     );
   }
 } 

@@ -8,44 +8,74 @@ import { FiEdit2, FiTrash2, FiLoader, FiImage } from "react-icons/fi";
 import toast from 'react-hot-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+interface Product {
+  _id: string;
+  name: string;
+  price: number;
+  description: string;
+  images: string[];
+}
+
+interface ProductCardProps {
+  product: Product;
+  onEdit: (product: Product) => void;
+  onDelete: () => void;
+  t: (key: string) => string;
+}
+
 const ProductsStudio = () => {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [deletingProduct, setDeletingProduct] = useState(null);
-  const [newImages, setNewImages] = useState([]);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
   const { t, language } = useLanguage();
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch("/api/products");
-        const data = await response.json();
-        setProducts(data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch("/api/products", {
+        cache: 'no-store'
+      });
+      if (!response.ok) throw new Error("Failed to fetch");
+      const data = await response.json();
+      setProducts(data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error(t('products.fetchError'));
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchProducts();
+    const interval = setInterval(fetchProducts, 5000);
+    return () => clearInterval(interval);
   }, []);
 
-  const handleEdit = (product) => {
+  const handleEdit = (product: Product) => {
     setEditingProduct(product);
     setNewImages([]);
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setNewImages(Array.from(e.target.files));
+      setIsUploadingImages(true);
+      const files = Array.from(e.target.files);
+      setNewImages(files);
+
+      // Create previews for new images
+      const previews = files.map(file => URL.createObjectURL(file));
+      setNewImagePreviews(previews);
+      setIsUploadingImages(false);
     }
   };
 
-  const handleRemoveImage = (image) => {
+  const handleRemoveImage = (image: string) => {
     if (editingProduct) {
       setEditingProduct({
         ...editingProduct,
@@ -54,7 +84,7 @@ const ProductsStudio = () => {
     }
   };
 
-  const handleUpdate = async (e) => {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingProduct) {
       setIsUpdating(true);
@@ -71,12 +101,12 @@ const ProductsStudio = () => {
       });
 
       toast.promise(updatePromise, {
-        loading: 'جاري تحديث المنتج...',
+        loading: t('common.updating'),
         success: () => {
           setEditingProduct(null);
-          return 'تم تحديث المنتج بنجاح';
+          return t('productsStudio.updateSuccess');
         },
-        error: 'حدث خطأ أثناء تحديث المنتج'
+        error: t('productsStudio.updateError')
       });
 
       try {
@@ -118,6 +148,13 @@ const ProductsStudio = () => {
     }
   };
 
+  // Cleanup previews when component unmounts or dialog closes
+  useEffect(() => {
+    return () => {
+      newImagePreviews.forEach(preview => URL.revokeObjectURL(preview));
+    };
+  }, [newImagePreviews]);
+
   if (loading) return (
     <div className="flex justify-center items-center h-screen text-lg">
       {t('common.loading')}
@@ -144,7 +181,11 @@ const ProductsStudio = () => {
       </div>
 
       {/* Edit Dialog */}
-      <Dialog open={!!editingProduct} onOpenChange={() => setEditingProduct(null)}>
+      <Dialog open={!!editingProduct} onOpenChange={() => {
+        setEditingProduct(null);
+        setNewImagePreviews([]);
+        setNewImages([]);
+      }}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-gray-900">
@@ -220,21 +261,57 @@ const ProductsStudio = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   {t('productsStudio.addNewImages')}
                 </label>
-                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors duration-200">
-                  <div className="space-y-2 text-center">
-                    <FiImage className="mx-auto h-12 w-12 text-gray-400" />
-                    <div className="flex text-sm text-gray-600">
-                      <label className="relative cursor-pointer rounded-md font-medium text-blue-600 hover:text-blue-500">
-                        <span>{t('productsStudio.chooseImages')}</span>
-                        <input
-                          type="file"
-                          multiple
-                          onChange={handleImageChange}
-                          className="sr-only"
-                        />
-                      </label>
+                <div className="mt-1 flex flex-col space-y-4">
+                  <div className="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors duration-200">
+                    <div className="space-y-2 text-center">
+                      <FiImage className="mx-auto h-12 w-12 text-gray-400" />
+                      <div className="flex text-sm text-gray-600">
+                        <label className="relative cursor-pointer rounded-md font-medium text-blue-600 hover:text-blue-500">
+                          <span>{t('productsStudio.chooseImages')}</span>
+                          <input
+                            type="file"
+                            multiple
+                            onChange={handleImageChange}
+                            className="sr-only"
+                            accept="image/*"
+                          />
+                        </label>
+                      </div>
                     </div>
                   </div>
+
+                  {newImagePreviews.length > 0 && (
+                    <div className="grid grid-cols-4 gap-4">
+                      {newImagePreviews.map((preview, index) => (
+                        <div key={preview} className="relative group">
+                          <Image
+                            src={preview}
+                            alt="Preview"
+                            width={100}
+                            height={100}
+                            className="rounded-lg object-cover w-full h-24"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setNewImagePreviews(prev => prev.filter((_, i) => i !== index));
+                              setNewImages(prev => prev.filter((_, i) => i !== index));
+                            }}
+                            className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                          >
+                            <FiTrash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {isUploadingImages && (
+                    <div className="flex items-center justify-center text-sm text-gray-500">
+                      <FiLoader className="animate-spin mr-2" />
+                      {t('common.uploading')}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -293,45 +370,52 @@ const ProductsStudio = () => {
   );
 };
 
-const ProductCard = memo(({ product, onEdit, onDelete, t }) => (
-  <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-200 hover:shadow-lg">
-    <div className="relative aspect-square">
-      {product.images.length > 0 ? (
-        <Image
-          src={product.images[0]}
-          alt={product.name}
-          fill
-          className="object-cover"
-        />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center bg-gray-100">
-          <FiImage className="w-12 h-12 text-gray-400" />
+const ProductCard = memo(({ product, onEdit, onDelete, t }: ProductCardProps) => {
+  const { language } = useLanguage();
+  
+  return (
+    <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-200 hover:shadow-lg">
+      <div className="relative aspect-square">
+        {product.images.length > 0 ? (
+          <Image
+            src={product.images[0]}
+            alt={product.name}
+            fill
+            className="object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gray-100">
+            <FiImage className="w-12 h-12 text-gray-400" />
+          </div>
+        )}
+      </div>
+      <div className="p-4">
+        <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
+        <p className="text-blue-600 font-bold mt-1">
+          {product.price.toFixed(2)}
+          {language === 'ar' ? ' دج' : ' DA'}
+        </p>
+        <div className="flex gap-2 mt-4">
+          <Button
+            onClick={() => onEdit(product)}
+            variant="outline"
+            className="flex-1"
+          >
+            <FiEdit2 className="w-4 h-4 mr-2" />
+            {t('productsStudio.edit')}
+          </Button>
+          <Button
+            onClick={() => onDelete()}
+            variant="destructive"
+            className="flex-1"
+          >
+            <FiTrash2 className="w-4 h-4 mr-2" />
+            {t('productsStudio.delete')}
+          </Button>
         </div>
-      )}
-    </div>
-    <div className="p-4">
-      <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
-      <p className="text-blue-600 font-bold mt-1">{product.price.toFixed(2)} دج</p>
-      <div className="flex gap-2 mt-4">
-        <Button
-          onClick={() => onEdit(product)}
-          variant="outline"
-          className="flex-1"
-        >
-          <FiEdit2 className="w-4 h-4 mr-2" />
-          {t('productsStudio.edit')}
-        </Button>
-        <Button
-          onClick={() => onDelete(product)}
-          variant="destructive"
-          className="flex-1"
-        >
-          <FiTrash2 className="w-4 h-4 mr-2" />
-          {t('productsStudio.delete')}
-        </Button>
       </div>
     </div>
-  </div>
-));
+  );
+});
 
 export default ProductsStudio;
