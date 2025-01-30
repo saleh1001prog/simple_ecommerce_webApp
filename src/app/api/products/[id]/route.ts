@@ -16,7 +16,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = params.id;
+    const id = await params.id;
     await dbConnect();
     
     const product = await Product.findById(id).lean() as ProductDocument;
