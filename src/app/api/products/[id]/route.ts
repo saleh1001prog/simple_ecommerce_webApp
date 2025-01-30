@@ -12,20 +12,13 @@ interface ProductDocument {
 }
 
 export async function GET(
-  request: NextRequest,
-  context: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: { id: string } }
 ) {
-  const { id } = context.params;
-
-  if (!id) {
-    return Response.json(
-      { error: 'معرف المنتج مطلوب' },
-      { status: 400 }
-    );
-  }
-
   try {
+    const id = params.id;
     await dbConnect();
+    
     const product = await Product.findById(id).lean() as ProductDocument;
 
     if (!product) {
