@@ -2,9 +2,24 @@ import dbConnect from '@/lib/mongodb';
 import Product from '@/models/Product';
 import { NextRequest, NextResponse } from 'next/server';
 
+type RouteParams = {
+  params: {
+    id: string;
+  };
+};
+
+interface ProductDocument {
+  _id: any;
+  name: string;
+  price: number;
+  description: string;
+  images: string[];
+  __v: number;
+}
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams
 ) {
   if (!params?.id) {
     return NextResponse.json(
@@ -15,8 +30,7 @@ export async function GET(
 
   try {
     await dbConnect();
-    const id = await Promise.resolve(params.id);
-    const product = await Product.findById(id).lean();
+    const product = await Product.findById(params.id).lean() as ProductDocument;
 
     if (!product) {
       return NextResponse.json(
@@ -25,7 +39,7 @@ export async function GET(
       );
     }
 
-    // Transform the product data to handle ObjectId and ensure valid JSON
+    // Transform the product data to handle ObjectId
     const sanitizedProduct = {
       ...product,
       _id: product._id.toString(),
