@@ -11,12 +11,18 @@ interface ProductDocument {
   __v: number;
 }
 
+type Props = {
+  params: {
+    id: Promise<string> | string;
+  };
+};
+
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: Props
 ) {
   try {
-    const id = await params.id;
+    const id = typeof params.id === 'string' ? params.id : await params.id;
     await dbConnect();
     
     const product = await Product.findById(id).lean() as ProductDocument;
