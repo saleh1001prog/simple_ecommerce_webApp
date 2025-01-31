@@ -168,7 +168,7 @@ const ProductsStudio = () => {
         <p className="mt-2 text-gray-600">{t('productsStudio.description')}</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {products.map((product) => (
           <ProductCard
             key={product._id}
@@ -374,8 +374,8 @@ const ProductCard = memo(({ product, onEdit, onDelete, t }: ProductCardProps) =>
   const { language } = useLanguage();
   
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-200 hover:shadow-lg">
-      <div className="relative aspect-square">
+    <div className="flex flex-col bg-white rounded-lg shadow-md overflow-hidden transition-all duration-200 hover:shadow-lg w-full max-w-sm mx-auto">
+      <div className="relative w-full aspect-[4/3]">
         {product.images.length > 0 ? (
           <Image
             src={product.images[0]}
@@ -389,13 +389,13 @@ const ProductCard = memo(({ product, onEdit, onDelete, t }: ProductCardProps) =>
           </div>
         )}
       </div>
-      <div className="p-4">
-        <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
-        <p className="text-blue-600 font-bold mt-1">
+      <div className="p-4 flex flex-col flex-grow">
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h3>
+        <p className="text-blue-600 font-bold">
           {product.price.toFixed(2)}
           {language === 'ar' ? ' دج' : ' DA'}
         </p>
-        <div className="flex gap-2 mt-4">
+        <div className="flex gap-2 mt-auto pt-4">
           <Button
             onClick={() => onEdit(product)}
             variant="outline"

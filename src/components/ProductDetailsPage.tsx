@@ -159,7 +159,7 @@ const ProductDetailsPage = ({ productId }: Props) => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
             <p className="mt-4 text-xl font-semibold text-blue-600">
-              {product.price} دج
+              {product.price} da
             </p>
           </div>
 
