@@ -186,14 +186,14 @@ const ProductsStudio = () => {
         setNewImagePreviews([]);
         setNewImages([]);
       }}>
-        <DialogContent className="sm:max-w-xl">
+        <DialogContent className="sm:max-w-xl max-h-[95vh]  overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-gray-900">
               {t('productsStudio.editTitle')}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleUpdate} className="space-y-6">
-            <div className="space-y-4">
+          <form onSubmit={handleUpdate} className="space-y-6  ">
+            <div className="space-y-4 ">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   {t('productsStudio.productName')}
