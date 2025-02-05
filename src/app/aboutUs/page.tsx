@@ -39,7 +39,7 @@ function Page() {
 
   return (
     <div 
-      className="flex min-h-[calc(100vh_-_187px)] flex-wrap items-center justify-around bg-gray-100 p-4 md:p-8" 
+      className="flex min-h-[100vh] flex-wrap items-center justify-around bg-gray-100 p-4 md:p-8" 
       dir={language === 'ar' ? 'rtl' : 'ltr'}
     >
       <div className="max-w-xl text-center md:text-right mb-8 md:mb-0">
